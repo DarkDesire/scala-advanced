@@ -46,15 +46,22 @@ trait MySet[A] extends (A=>Boolean){
   def &(anotherSet: MySet[A]): MySet[A] // intersection
   def unary_! : MySet[A]
 }
+
+// all elements of type A which satisfy a property
+// {x in A || property(x)}
 class PropertyBasedSet[A](property: A => Boolean) extends MySet[A] {
   def contains(elem: A): Boolean = property(elem)
 
-  def +(elem: A): MySet[A] =
+  // {x in A | property(x)} + element = {x in A | property(x) | x == element }
+  def +(elem: A): MySet[A] = {
     new PropertyBasedSet[A](x => property(x) || x == elem)
-
+  }
+  // {x in A | property(x)} ++ set = { x in A | property(x) || set contains x }
   def ++(anotherSet: MySet[A]): MySet[A] =
     new PropertyBasedSet[A](x => property(x) || anotherSet(x))
 
+  // all integers => map (_%3) => [0 1 2] (we will get (finite or not) set)
+  // map, flatMap, foreach => politelyFail
   def map[B](f: A => B): MySet[B] = politelyFail
   def flatMap[B](f: A => MySet[B]): MySet[B] = politelyFail
   def foreach(f: A => Unit): Unit = politelyFail
