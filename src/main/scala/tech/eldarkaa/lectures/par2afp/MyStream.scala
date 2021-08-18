@@ -19,7 +19,7 @@ abstract class MyStream[+A] {
   def tail: MyStream[A]
 
   def #::[B >: A](element:B): MyStream[B] // prepand operator
-  def ++[B >: A](anotherStream: MyStream[B]): MyStream[B] // concat two streams
+  def ++[B >: A](anotherStream: => MyStream[B]): MyStream[B] // concat two streams
 
   def foreach(f: A => Unit): Unit
   def map[B](f: A=>B): MyStream[B]
@@ -52,7 +52,7 @@ class LazyStream[A](hd: A, tl: => MyStream[A]) extends MyStream[A]{
   // evaluated by need
   def #::[B >: A](element: B): MyStream[B] = new LazyStream[B](element, this)
   // evaluated by need
-  def ++[B >: A](anotherStream: MyStream[B]): MyStream[B] =
+  def ++[B >: A](anotherStream: => MyStream[B]): MyStream[B] =
     new LazyStream[B](head, tail ++ anotherStream)
 
   def foreach(f: A => Unit): Unit = {
@@ -78,7 +78,7 @@ object EmptyLazyStream extends MyStream[Nothing]{
   def tail: MyStream[Nothing] = throw new NoSuchElementException
 
   def #::[B >: Nothing](element: B): MyStream[B] = new LazyStream[B](element, this)
-  def ++[B >: Nothing](anotherStream: MyStream[B]): MyStream[B] = anotherStream
+  def ++[B >: Nothing](anotherStream: => MyStream[B]): MyStream[B] = anotherStream
 
   def foreach(f: Nothing => Unit): Unit = ()
   def map[B](f: Nothing => B): MyStream[B] = this
@@ -90,9 +90,9 @@ object EmptyLazyStream extends MyStream[Nothing]{
 
 object StreamsPlayground extends App {
   val naturals = MyStream.from(1)(x => x+1)
-  println(naturals.head)
-  println(naturals.tail.head)
-  println(naturals.tail.tail.head)
+  //println(naturals.head)
+  //println(naturals.tail.head)
+  //println(naturals.tail.tail.head)
 
   val startFrom0 = 0 #:: naturals // naturals.#::(0)
   //println(startFrom0.head)
@@ -101,5 +101,39 @@ object StreamsPlayground extends App {
   //startFrom0.take(10000).foreach(println)
   // map
   //startFrom0.map(_*2).take(100).foreach(println)
-  startFrom0.flatMap(x => MyStream.from(x)(x=>x+1)).take(10).foreach(println)
+  //println(startFrom0.flatMap(x => new LazyStream(x, new LazyStream(x+1, EmptyLazyStream))).take(10).toList())
+  println(startFrom0.filter(_ < 10).take(10).take(20).toList())
+
+  // Exercises on streams
+  // 1 - stream of fibonacci numbers
+  val stream = new LazyStream(0, MyStream.from(1)(x => x+1))
+  // 2 - stream of prime numbers with Eratosthenes' sieve
+  /*
+    [ 2 3 4 .. ]
+    filter out all numbers divisible by 2
+    [ 2 3 5 7 9 11 ... ]
+    filter out all numbers divisible by 3
+    [ 2 3 5 7 11 13 ... ]
+    filter out all numbers divisible by 5
+    [ 2 3 5 7 11 13 ... ]
+   */
+  // 1
+  def fibonacci(first:BigInt, second:BigInt): MyStream[BigInt] =
+    new LazyStream[BigInt](first, fibonacci(second, first+second))
+
+  println(fibonacci(0,1).take(100).toList())
+
+  // 2
+  /*
+    [2,3,4,5,6,7,8,9,10,11,12]
+   */
+  def eratosthenes(numbers: MyStream[Int]): MyStream[Int] =
+    if (numbers.isEmpty) numbers // if finite or it's end
+    else {
+      new LazyStream[Int](numbers.head, eratosthenes(numbers.tail
+        .filter(_ % numbers.head != 0))
+      )
+    }
+
+  println(eratosthenes(MyStream.from(2)(_ + 1)).take(100).toList())
 }
