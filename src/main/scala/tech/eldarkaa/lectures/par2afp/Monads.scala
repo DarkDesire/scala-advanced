@@ -72,10 +72,29 @@ object Monads extends App {
 
 
   2. Monads = unit + flatMap
+      equals to
      Monads = unit + map + flatten
 
-   */
+    Monad [T] { // List
+      def unit(value:T): Monad[T] (implemented)
+      def flatMap[B](f: T=>Monad[B]):Monad[B] = ... (implemented)
 
+      def map[B](f: T=>B): Monad[B] = flatMap(x => unit(f(x)))
+      f(x) => T=>B => B
+      unit(B) => Monad[B]
+
+      def flatten(m:Monad[Monad[T]]): Monad[T] =
+        m.flatMap((x:Monad[T]) => x)
+
+      // map
+      List(1,2,3).map(_ *2) = List(1,2,3).flatMap(x => List(x * 2))
+      // flatten
+      List(List(1,2), List(3,4)).flatten =
+      List(List(1,2), List(3,4)).flatMap(x=> x) =
+      List(1,2,3,4)
+    }
+   */
+  println(List(List(1,2), List(3,4)).flatten)
 }
 
 // Our own Try monad
