@@ -60,7 +60,9 @@ object FuturesMiniSocialNetwork extends App {
   val aFetchedProfileNoMatterWhat = SocialNetwork.fetchProfile("unknown id").recoverWith{
     case e: Throwable => SocialNetwork.fetchProfile("fb.id.0-dummy")
       // if we now for sure
-  }
+  } // F1.recoverWith(F2) , F2 starts computing only after F1 fail
 
-  val fallbackResult =  SocialNetwork.fetchProfile("unknown id").fallbackTo(SocialNetwork.fetchProfile("fb.id.0-dummy"))
+  val fallbackResult =  SocialNetwork.fetchProfile("unknown id")
+    .fallbackTo(SocialNetwork.fetchProfile("fb.id.0-dummy"))
+  // F1.fallbackTo(F2) , F2 starts computing in parallel
 }
