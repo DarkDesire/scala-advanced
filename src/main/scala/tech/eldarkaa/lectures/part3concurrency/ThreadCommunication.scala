@@ -4,11 +4,7 @@ object ThreadCommunication extends App {
 
   /*
   the producer-consumer problem
-
-  producer (set value) ->
-                      [ ? ]
-                       -> (extract value) consumer
-
+    producer -> [ ? ] -> consumer
    */
 
   def naiveProdCons():Unit = {

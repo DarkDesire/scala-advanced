@@ -2,6 +2,11 @@ package tech.eldarkaa.lectures.part3concurrency
 
 object WaitAndNotify extends App {
 
+  /*
+  the producer-consumer problem
+    producer -> [ ? ] -> consumer
+   */
+
   // wait() and notify()
   // wait()-ing on a object's monitor suspends you (the thread) indefinitely
 
