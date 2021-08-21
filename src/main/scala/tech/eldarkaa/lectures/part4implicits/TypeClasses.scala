@@ -1,6 +1,13 @@
 package tech.eldarkaa.lectures.part4implicits
 
 object TypeClasses extends App {
+  // Tips:
+  /*
+    - keep type enrichment to implicit classes and type classes
+    - avoid implicit defs as much as possible
+    - package implicits clearly ,bring into the scope ONLY WHAT YOU NEED
+    - IF you need conversion, make them specific
+   */
 
   // option 1 - trait
   trait HTMLWritable {
@@ -35,7 +42,7 @@ object TypeClasses extends App {
   trait HTMLSerializer[T]{
     def serialize(value: T): String
   }
-  object UserSerializer extends HTMLSerializer[User]{
+  implicit object UserSerializer extends HTMLSerializer[User]{
     override def serialize(user: User): String =
       s"<div>${user.name} (${user.age} yo) <a href=${user.email}/> </div>"
   }
@@ -59,10 +66,6 @@ object TypeClasses extends App {
   // we instantiate them only ONCE
 
 
-  // TYPE CLASS
-  trait MyTypeClassTemplate[T] {
-    def action(value: T):String
-  }
 
   /*
    Equality
@@ -81,4 +84,57 @@ object TypeClasses extends App {
   println(s"name equality: ${NameEquality.===(john, anna)}")
   println(s"email equality: ${EmailEquality.===(john, anna)}")
   // wtf John, emails are the same
+
+
+  // part 2
+  object HTMLSerializer {
+    def serialize[T](value:T)(implicit serializer: HTMLSerializer[T]): String = serializer.serialize(value)
+
+    def apply[T](implicit serializer: HTMLSerializer[T]) = serializer
+  }
+  implicit object IntSerializer extends HTMLSerializer[Int]{
+    def serialize(value: Int): String = s"<div style: color=blue>$value</div>"
+  }
+  implicit object StringSerializer extends HTMLSerializer[String]{
+    def serialize(value: String): String = s"<div style: displat-text=inline>$value</div>"
+  }
+  println(HTMLSerializer.serialize(42))
+  println(HTMLSerializer.serialize(john))
+
+  // apply - access to the entire type class interface
+  println(HTMLSerializer[User].serialize(john))
+
+
+  // TYPE CLASS
+  trait MyTypeClassTemplate[T] {
+    def action(value: T):String
+  }
+  object MyTypeClassTemplate {
+    def apply[T](implicit instance: MyTypeClassTemplate[T]) = instance
+  }
+
+
+
+  // Exercise
+  /*
+    Implement the TC pattern for the Equality
+   */
+  /* trait Equal[T] {
+    def ===(a:T, b:T): Boolean
+  } */
+  object Equal {
+    def apply[T](a:T, b:T)(implicit eq: Equal[T]) = eq.===(a,b)
+  }
+  implicit object IntEqual extends Equal[Int] {
+    def ===(a: Int, b: Int): Boolean = a == b
+  }
+  implicit object UserEqual extends Equal[User] {
+    def ===(a: User, b: User): Boolean = a.name == b.name && a.email == b.email
+  }
+
+  println(Equal(1,2))
+  println(Equal(2,2))
+  println(Equal(john,anna))
+  // AD-HOC polymorphism
+
 }
