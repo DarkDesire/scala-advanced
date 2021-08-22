@@ -105,4 +105,22 @@ object Variance extends App {
         - method arguments are in CONTRAVARIANT POSITION
         - return types are in COVARIANT POSITION
    */
+
+
+  /* Variance Exercise
+    1. Invariant, covariant, contravariant Parking[T](things:List[T]){
+      park(vehicle: T)
+      impound(vehicles: List[T]
+      checkVehicles(condition: String): List[T]
+    }
+    2. used someone else's API: IList[T] (invariant)
+    3. Parking = monad!
+      - flatMap
+   */
+  class Vehicle
+  class Bike extends Vehicle
+  class Cars extends Vehicle
+  class Moto extends Vehicle
+
+  class IList[T]
 }
