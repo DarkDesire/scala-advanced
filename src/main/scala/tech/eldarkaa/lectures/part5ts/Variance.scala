@@ -27,7 +27,7 @@ object Variance extends App {
   val contraCage: XCage[Cat] = new XCage[Animal]
 
 
-  class InvariantCage[T](val animal: T)
+  class InvariantCage[T](val animal: T) // ok
   class InvariantVariableCage[T](var animal: T) // ok
 
   // covariant positions
@@ -110,7 +110,7 @@ object Variance extends App {
   /* Variance Exercise
     1. Invariant, covariant, contravariant Parking[T](things:List[T]){
       park(vehicle: T)
-      impound(vehicles: List[T]
+      impound(vehicles: List[T])
       checkVehicles(condition: String): List[T]
     }
     2. used someone else's API: IList[T] (invariant)
@@ -123,4 +123,49 @@ object Variance extends App {
   class Moto extends Vehicle
 
   class IList[T]
+  // 1.1 Invariant
+  // allow 1 type and only 1
+  class IParking[T](vehicles: List[T]) {
+    def park(vehicle: T): IParking[T] = new IParking(vehicle :: vehicles)
+    def impound(vehicles: List[T]): IParking[T] = new IParking(this.vehicles.filter(v => !vehicles.contains(v)))
+    def checkVehicles(condition: Boolean): List[T] = vehicles
+    def flatMap[S](f: T => IParking[S]): IParking[S] = ???
+  }
+  // 1.2 Covariant
+  class CParking[+T](vehicles: List[T]) {
+    def park[V >: T](vehicle: V): CParking[V] = new CParking(vehicle :: vehicles)
+    def impound[V >: T](vehicles: List[V]): CParking[V] = new CParking(this.vehicles.filter(v => !vehicles.contains(v)))
+    def checkVehicles(condition: Boolean): List[T] =  vehicles
+    def flatMap[S](f: T => CParking[S]): CParking[S] = ???
+  }
+  // 1.3
+  class XParking[-T](vehicles: List[T]) {
+    def park(vehicle: T): XParking[T] = new XParking(vehicle :: vehicles)
+    def impound(vehicles: List[T]): XParking[T] = new XParking(this.vehicles.filter(v => !vehicles.contains(v)))
+    def checkVehicles[V <: T](condition: Boolean): List[V] = ???
+    def flatMap[R <: T,S](f: R => XParking[S]): XParking[S] = ???
+  }
+
+  /*
+      Rule of thumb
+      - use covariance = COLLECTION OF THINGS
+      - use contravariance = GROUP OF ACTIONS
+   */
+  // in this example we're using XParking (actions over vehicle)
+
+
+  // 2. used someone else's API: IList[T] (invariant)
+  class CParking2[+T](vehicles: IList[T]) {
+    def park[V >: T](vehicle: V): CParking2[T] = ???
+    def impound[V >: T](vehicles: IList[V]): CParking[V] = ???
+    def checkVehicles[V >: T](condition: Boolean): IList[V] = ???
+  }
+  // 1.3
+  class XParking2[-T](vehicles: IList[T]) {
+    def park(vehicle: T): XParking[T] = ???
+    def impound[S <: T](vehicles: IList[S]): XParking[S] = ???
+    def checkVehicles[S <: T](condition: Boolean): IList[S] = ???
+  }
+
+  // 3 flatMap
 }
