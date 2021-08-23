@@ -49,7 +49,7 @@ object TypeMembers extends App {
 
   // LOCKED
   trait MList {
-    type A >: AnyVal
+    type A
     def head: A
     def tail: MList
   }
@@ -68,10 +68,6 @@ object TypeMembers extends App {
   class IntList(hd: Int, tl: IntList) extends MList {
     type A = Int
     def head: A = hd
-    def tail: MList = tl
+    def tail: IntList = tl
   }
-
-
-
-
 }
