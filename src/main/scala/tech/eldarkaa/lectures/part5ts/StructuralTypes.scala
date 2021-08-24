@@ -20,11 +20,11 @@ object StructuralTypes extends App {
   def closeQuietly(unifiedCloseable: UnifiedCloseable): Unit =
     unifiedCloseable.close()
 
-  closeQuietly(new JavaClosable{
+ /* closeQuietly(new JavaClosable{
     def close(): Unit = ???
   })
   closeQuietly(new HipsterClosable)
-
+*/
 
 
   // TYPE REFINEMENTS
@@ -88,7 +88,7 @@ object StructuralTypes extends App {
   // Exercise 2.
   object HeadEqualizer {
     type Headable[T] = { def head: T }
-    def ===[T](a: Headable[T], b: Headable[T]): Boolean = a.head() == b.head()
+    def ===[T](a: Headable[T], b: Headable[T]): Boolean = a.head == b.head
   }
   /* Question.
     2. is compatible with CBL and with a Human
