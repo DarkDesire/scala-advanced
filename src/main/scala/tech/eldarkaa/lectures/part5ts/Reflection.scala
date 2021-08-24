@@ -49,4 +49,54 @@ object Reflection extends App {
 
   method.apply()
 
+  // type erasure
+  // pp #1: different types at runtime
+  val numbers = List(1,2,3)
+  numbers match {
+    case listOfStrings: List[String] => println("list of strings")
+    case listOfInts: List[Int] => println("list of ints")
+    case _ =>
+  }
+
+  // pp #2: limitations on overloads
+  // def processList(list: List[Int]): Int = 43
+  // def processList(list: List[String]): Int = 43
+
+  // reflection workaround
+
+  // TypeTags
+  // 0 - import
+  import ru._
+
+  // 1 - create a type tag "manually"
+  val ttag: ru.TypeTag[Person] = typeTag[Person]
+  println(ttag.tpe)
+
+  class MyMap[K, V]
+  // 2 -pass type tags as implicit params
+  def getTypeArguments[T](value: T)(implicit typeTag: TypeTag[T]): List[Type] = typeTag.tpe match {
+    case TypeRef(pre, sym, args) => args
+    case _ => List()
+  }
+
+  val myMap = new MyMap[Int, String]
+  val typeArgs = getTypeArguments(myMap) // TypeTag[MyMap[Int,String]]
+  println(typeArgs)
+
+  def isSubtype[A,B](implicit ttA: TypeTag[A], ttB: TypeTag[B]): Boolean = {
+    ttA.tpe <:< ttB.tpe
+  }
+
+  class Animal
+  class Dog extends Animal
+  println(isSubtype[Dog, Animal])
+
+  ////// Marry sayMyName
+  // 3 - method symbol (symbol)
+  val anotherMethodSymbol = typeTag[Person].tpe.decl(ru.TermName(methodName)).asMethod
+  // 4 - reflect the method (MethodMirror)
+  val anotherMethod = reflected.reflectMethod(anotherMethodSymbol)
+  // 5 - invoke the method
+
+  anotherMethod.apply()
 }
